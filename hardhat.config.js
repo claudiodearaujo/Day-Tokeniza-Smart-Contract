@@ -1,4 +1,3 @@
-```javascript
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
 
@@ -28,4 +27,3 @@ module.exports = {
         apiKey: process.env.POLYGONSCAN_API_KEY
     }
 };
-```

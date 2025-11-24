@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC1400/ERC1400.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title ReceivableToken
@@ -16,7 +16,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
  * - Settlement no vencimento (pagamento automatizado)
  * - Metadata do recebível on-chain
  */
-contract ReceivableToken is ERC1400, Ownable, Pausable, ReentrancyGuard {
+contract ReceivableToken is ERC20, Ownable, Pausable, ReentrancyGuard {
     
     // Estrutura de dados do recebível
     struct Receivable {
@@ -67,10 +67,7 @@ contract ReceivableToken is ERC1400, Ownable, Pausable, ReentrancyGuard {
         uint256 timestamp
     );
     
-    constructor() ERC1400("Daycoval Receivable Token", "DRT", new address ) Ownable(msg.sender) {
-        // Partition padrão
-        _defaultPartitions.push(bytes32("default"));
-    }
+    constructor() ERC20("Daycoval Receivable Token", "DRT") Ownable(msg.sender) {}
     
     /**
      * @dev Tokeniza um recebível (mint de novos tokens)
@@ -122,8 +119,8 @@ contract ReceivableToken is ERC1400, Ownable, Pausable, ReentrancyGuard {
             isDefaulted: false
         });
         
-        // Mintar tokens para PME (partition padrão)
-        _issue(_pmeAddress, _tokenizedAmount, bytes32("default"), "");
+        // Mintar tokens ERC20 diretamente para a PME
+        _mint(_pmeAddress, _tokenizedAmount);
         
         // Registrar
         pmeReceivables[_pmeAddress].push(tokenId);
@@ -157,16 +154,8 @@ contract ReceivableToken is ERC1400, Ownable, Pausable, ReentrancyGuard {
         require(!receivables[_tokenId].isSettled, "Receivable already settled");
         require(!receivables[_tokenId].isDefaulted, "Receivable defaulted");
         
-        // Transferir via ERC1400
-        _operatorTransferByPartition(
-            bytes32("default"),
-            msg.sender,
-            msg.sender,
-            _to,
-            _amount,
-            "",
-            ""
-        );
+        // Transferência padrão ERC20
+        _transfer(msg.sender, _to, _amount);
         
         // Registrar no mapping do investidor
         bool alreadyOwns = false;

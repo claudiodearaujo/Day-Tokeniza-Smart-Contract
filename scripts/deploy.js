@@ -1,4 +1,3 @@
-```javascript
 const hre = require("hardhat");
 const fs = require("fs");
 
@@ -41,4 +40,3 @@ main()
         console.error(error);
         process.exit(1);
     });
-```

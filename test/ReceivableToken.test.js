@@ -63,11 +63,9 @@ describe("ReceivableToken", function () {
     });
 
     it("Should settle receivable after maturity", async function () {
-        console.log("Starting settle test");
         const block = await ethers.provider.getBlock('latest');
         const maturityDate = block.timestamp + 10; // 10 segundos no futuro
 
-        console.log("Tokenizing...");
         const tx = await receivableToken.tokenizeReceivable(
             "REC-003",
             pme.address,
@@ -79,21 +77,16 @@ describe("ReceivableToken", function () {
             "C"
         );
         await tx.wait();
-        console.log("Tokenized.");
 
         const pmeTokens = await receivableToken.getPMEReceivables(pme.address);
         const tokenId = pmeTokens[0];
 
         // Esperar vencimento
-        console.log("Increasing time...");
-        await network.provider.send("evm_increaseTime", [2]);
+        await network.provider.send("evm_increaseTime", [15]);
         await network.provider.send("evm_mine");
-        console.log("Time increased.");
 
         // Liquidar
-        console.log("Settling...");
         await receivableToken.settleReceivable(tokenId);
-        console.log("Settled.");
 
         const details = await receivableToken.getReceivableDetails(tokenId);
         expect(details.isSettled).to.equal(true);
